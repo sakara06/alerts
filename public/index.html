@@ -4,134 +4,488 @@
 <meta charset="UTF-8" />
 <title>Hälytykset</title>
 <style>
-/* Minimal inline styles preserved from original */
-body { font-family: Arial, sans-serif; padding: 30px; background: #f4f4f4; }
-table { width:100%; border-collapse: collapse; background: white; }
-th, td { border: 1px solid #ccc; padding: 10px; text-align:left; }
-.no-results { text-align:center; padding:20px; color:#666; font-style:italic; }
-button { padding:6px 10px; margin-right:6px; }
-.modal-bg { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); display:flex; align-items:center; justify-content:center; }
+body { font-family: Arial, sans-serif; padding: 30px; background: #f4f4f4; color: #333; }
+.auth-container { background: white; padding: 30px; border-radius: 8px; max-width: 400px; margin: 0 auto; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+.auth-container h2 { text-align: center; margin-bottom: 25px; color: #333; }
+.auth-container input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px; box-sizing: border-box; }
+.auth-container button { width: 100%; padding: 12px; margin: 5px 0; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; }
+.auth-container .btn-login { background: #4CAF50; color: white; }
+.auth-container .btn-register { background: #2196F3; color: white; }
+.auth-container .btn-login:hover { background: #45a049; }
+.auth-container .btn-register:hover { background: #1976D2; }
+.user-info { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+.user-info button { background: #f44336; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
+.user-info button:hover { background: #d32f2f; }
+.search-sort-container { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
+input[type="text"], input[type="time"] { padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 4px; }
+select { padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 4px; background: white; }
+table { width: 100%; margin-top: 20px; border-collapse: collapse; background: white; }
+th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+th { background: #eee; cursor: pointer; user-select: none; }
+th:hover { background: #ddd; }
+th.sorted-asc::after { content: " ↑"; }
+th.sorted-desc::after { content: " ↓"; }
+td:nth-child(1) { width: 38%; }
+td:nth-child(2) { width: 38%; }
+td:nth-child(3) { width: 4%; }
+td:nth-child(4) { width: 11%; }
+td:nth-child(5) { width: 9%; }
+button { padding: 5px 10px; border: none; cursor: pointer; margin-right: 4px; border-radius: 3px; }
+.copied { background: #dff0d8; }
+.pinned { background-color: #fff9c4; }
+.btn-delete { background: #c00; color: white; }
+.btn-pin { background: #ffeb3b; }
+.btn-edit, .btn-save { background: #ccc; }
+.no-results { text-align: center; padding: 20px; color: #666; font-style: italic; }
+.stats { margin-bottom: 15px; color: #666; font-size: 14px; }
+#restoreDeleted { background: #2196F3; color: white; }
+#alertMessage { display: none; position: fixed; top: 20px; right: 20px; background-color: #4CAF50; color: white; padding: 15px 25px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.2); font-size: 16px; z-index: 9999; transition: opacity 0.5s ease; }
+.modal-bg { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); display:flex; align-items:center; justify-content:center; z-index:99999; }
 .modal { background:white; padding:20px; border-radius:8px; min-width:300px; }
+.time-critical { background-color: #ffcccc !important; }
+.time-warning { background-color: #ffe6cc !important; }
+.time-soon { background-color: #ffffcc !important; }
+.pinned.time-critical { background-color: #ffb3b3 !important; }
+.pinned.time-warning { background-color: #ffd9b3 !important; }
+.pinned.time-soon { background-color: #ffffb3 !important; }
+#input { width: 100%; margin-top: 10px; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 4px; }
+.main-content { display: none; }
+.toggle-buttons { margin-bottom: 15px; }
+body.dark { background: #121212; color: #e0e0e0; }
+body.dark .auth-container { background: #1e1e1e; box-shadow: 0 2px 10px rgba(255,255,255,0.1); }
+body.dark .auth-container h2 { color: #e0e0e0; }
+body.dark .auth-container input { background: #2a2a2a; color: #e0e0e0; border: 1px solid #555; }
+body.dark .user-info { background: #1e1e1e; }
+body.dark table { background: #1e1e1e; color: #e0e0e0; }
+body.dark th { background: #2a2a2a; }
+body.dark th:hover { background: #333; }
+body.dark td { border-color: #444; }
+body.dark input, body.dark select, body.dark button { background: #2a2a2a; color: #e0e0e0; border: 1px solid #555; }
+body.dark .pinned { background-color: #44403c; }
+body.dark .no-results { color: #aaa; }
+body.dark .time-critical { background-color: #4d1a1a !important; }
+body.dark .time-warning { background-color: #4d331a !important; }
+body.dark .time-soon { background-color: #4d4d1a !important; }
+body.dark .pinned.time-critical { background-color: #661a1a !important; }
+body.dark .pinned.time-warning { background-color: #664411 !important; }
+body.dark .pinned.time-soon { background-color: #666611 !important; }
+body.dark .modal-bg { background: rgba(0, 0, 0, 0.8); color: #e0e0e0; }
+body.dark .modal { background: #2a2a2a; color: #e0e0e0; box-shadow: 0 0 15px #000; }
+body.dark .auth-container .btn-login { background: #4CAF50; }
+body.dark .auth-container .btn-register { background: #2196F3; }
 </style>
 </head>
 <body>
-<h2>Hälytykset</h2>
+
 <div id="authArea">
-  <div id="authForms">
-    <input id="email" placeholder="Sähköposti"><br><br>
-    <input id="password" type="password" placeholder="Salasana"><br><br>
-    <button id="btnRegister">Rekisteröidy</button>
-    <button id="btnLogin">Kirjaudu</button>
+  <div class="auth-container" id="authForms">
+    <h2>Kirjaudu sisään</h2>
+    <input id="email" placeholder="Sähköposti" type="email">
+    <input id="password" type="password" placeholder="Salasana">
+    <button id="btnLogin" class="btn-login">Kirjaudu sisään</button>
+    <button id="btnRegister" class="btn-register">Rekisteröidy</button>
   </div>
-  <div id="userInfo" style="display:none;">
-    <span id="userEmail"></span>
+  
+  <div class="user-info" id="userInfo" style="display:none;">
+    <span>Tervetuloa, <span id="userEmail"></span>!</span>
     <button id="btnLogout">Kirjaudu ulos</button>
   </div>
 </div>
-<div style="margin-top:20px;">
-  <input id="input" type="text" placeholder="Osoite, Hälytys, Kello (esim 1240 tai 9)" style="width:60%">
-  <button id="btnAdd">Lisää</button>
+
+<div class="main-content" id="mainContent">
+  <h2>Hälytykset</h2>
+  <div class="stats" id="stats"></div>
+  
+  <div class="toggle-buttons">
+    <button id="restoreDeleted" style="display: none;">Palauta poistetut hälytykset</button>
+    <button id="toggleDarkMode">Tumma / Vaalea tila</button>
+  </div>
+
+  <div class="search-sort-container">
+    <input id="searchInput" type="text" placeholder="Hae hälytyksistä..." style="width: 300px;" />
+    <select id="sortSelect">
+      <option value="time">Järjestä: Aika</option>
+      <option value="address">Järjestä: Osoite</option>
+      <option value="alert">Järjestä: Hälytys</option>
+      <option value="modified">Järjestä: Muokattu</option>
+    </select>
+    <select id="sortOrder">
+      <option value="asc">Nouseva</option>
+      <option value="desc">Laskeva</option>
+    </select>
+  </div>
+
+  <table id="alertTable">
+    <thead>
+      <tr>
+        <th data-column="address">Osoite</th>
+        <th data-column="alert">Hälytys</th>
+        <th data-column="time">Kello</th>
+        <th>Toiminnot</th>
+        <th data-column="modified">Viimeksi muokattu</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <input id="input" type="text" placeholder="Osoite, Hälytys, Kello (esim 1240 tai 9)" />
+  <div id="message"></div>
 </div>
-<table id="alertTable">
-  <thead><tr><th>Osoite</th><th>Hälytys</th><th>Kello</th><th>Toiminnot</th></tr></thead>
-  <tbody></tbody>
-</table>
-<div id="message"></div>
+
+<div id="alertMessage">Hälytys lisätty!</div>
+
 <script>
-  const API_BASE = '';
-  let token = localStorage.getItem('token') || null;
-  let user = JSON.parse(localStorage.getItem('user')||'null');
-  const setMessage = (m) => { document.getElementById('message').textContent = m; setTimeout(()=>document.getElementById('message').textContent='',2500); }
-  function updateAuthUI() {
-    if (token && user) {
-      document.getElementById('authForms').style.display='none';
-      document.getElementById('userInfo').style.display='block';
-      document.getElementById('userEmail').textContent = user.email;
-    } else {
-      document.getElementById('authForms').style.display='block';
-      document.getElementById('userInfo').style.display='none';
-    }
+const API_BASE = '';
+let token = localStorage.getItem('token') || null;
+let user = JSON.parse(localStorage.getItem('user')||'null');
+let alerts = [];
+let filteredAlerts = [];
+let currentSort = { column: 'time', order: 'asc' };
+
+const setMessage = (m) => { 
+  document.getElementById('message').textContent = m; 
+  setTimeout(()=>document.getElementById('message').textContent='',2500); 
+}
+
+function updateAuthUI() {
+  if (token && user) {
+    document.getElementById('authForms').style.display='none';
+    document.getElementById('userInfo').style.display='flex';
+    document.getElementById('mainContent').style.display='block';
+    document.getElementById('userEmail').textContent = user.email;
+    loadAlerts();
+  } else {
+    document.getElementById('authForms').style.display='block';
+    document.getElementById('userInfo').style.display='none';
+    document.getElementById('mainContent').style.display='none';
+    alerts = [];
+    render();
   }
+}
+
+document.getElementById('btnRegister').addEventListener('click', async ()=>{
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  if (!email || !password) return setMessage('Täytä kentät');
+  const res = await fetch('/api/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
+  const j = await res.json();
+  if (res.ok) setMessage('Rekisteröityminen onnistui. Kirjaudu sisään.');
+  else setMessage(j.error || 'Virhe');
+});
+
+document.getElementById('btnLogin').addEventListener('click', async ()=>{
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  if (!email || !password) return setMessage('Täytä kentät');
+  const res = await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
+  const j = await res.json();
+  if (res.ok) {
+    token = j.token; user = j.user;
+    localStorage.setItem('token', token); localStorage.setItem('user', JSON.stringify(user));
+    updateAuthUI();
+  } else {
+    setMessage(j.error || 'Kirjautuminen epäonnistui');
+  }
+});
+
+document.getElementById('btnLogout').addEventListener('click', ()=>{
+  token = null; user = null; 
+  localStorage.removeItem('token'); localStorage.removeItem('user'); 
   updateAuthUI();
-  document.getElementById('btnRegister').addEventListener('click', async ()=>{
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
-    if (!email || !password) return setMessage('Täytä kentät');
-    const res = await fetch('/api/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
-    const j = await res.json();
-    if (res.ok) setMessage('Rekisteröityminen onnistui. Kirjaudu sisään.');
-    else setMessage(j.error || 'Virhe');
-  });
-  document.getElementById('btnLogin').addEventListener('click', async ()=>{
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
-    if (!email || !password) return setMessage('Täytä kentät');
-    const res = await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
-    const j = await res.json();
-    if (res.ok) {
-      token = j.token; user = j.user;
-      localStorage.setItem('token', token); localStorage.setItem('user', JSON.stringify(user));
-      updateAuthUI(); loadAlerts();
+});
+
+function formatTime(t) {
+  t = t.replace(/\D/g, '');
+  if (t.length <= 2) return `${t.padStart(2,'0')}:00`;
+  if (t.length === 3) return `${t[0]}:${t.slice(1).padStart(2,'0')}`;
+  return `${t.slice(0,-2).padStart(2,'0')}:${t.slice(-2).padStart(2,'0')}`;
+}
+
+function isValidTime(timeStr) {
+  const [h,m] = timeStr.split(':').map(Number);
+  return h >= 0 && h < 24 && m >= 0 && m < 60;
+}
+
+function getTimeColorClass(alertTime) {
+  const now = new Date();
+  const currentHour = now.getHours();
+  const currentMinute = now.getMinutes();
+  const currentTotalMinutes = currentHour * 60 + currentMinute;
+  
+  const [alertHour, alertMinute] = alertTime.split(':').map(Number);
+  const alertTotalMinutes = alertHour * 60 + alertMinute;
+  
+  let diff = alertTotalMinutes - currentTotalMinutes;
+  
+  if (diff < -12 * 60) {
+    diff += 24 * 60;
+  }
+  
+  if (diff < -12 * 60) {
+    return '';
+  }
+  
+  if (diff <= 10) return 'time-critical';
+  if (diff <= 30) return 'time-warning';
+  if (diff <= 60) return 'time-soon';
+  
+  return '';
+}
+
+async function loadAlerts(){
+  if (!token) {
+    alerts = [];
+    render();
+    return;
+  }
+  const res = await fetch('/api/alerts', { headers: { 'Authorization': 'Bearer '+token } });
+  if (!res.ok) { 
+    alerts = [];
+    render(); 
+    return; 
+  }
+  const j = await res.json();
+  alerts = (j.alerts || []).map(a => ({
+    ...a,
+    pinned: a.pinned || false,
+    deleted: a.deleted || false,
+    modified: a.modified || new Date().toLocaleString('fi-FI')
+  }));
+  filterAlerts(document.getElementById('searchInput').value);
+}
+
+function updateStats() {
+  const total = alerts.filter(a => !a.deleted).length;
+  const pinned = alerts.filter(a=>a.pinned && !a.deleted).length;
+  const filteredCount = filteredAlerts.length;
+  let txt = `Yhteensä: ${total} hälytystä`;
+  if (pinned>0) txt += ` | Pinnattu: ${pinned}`;
+  if (filteredCount !== total) txt += ` | Näytetään: ${filteredCount}`;
+  document.getElementById('stats').textContent = txt;
+}
+
+function showRestoreButton() {
+  document.getElementById('restoreDeleted').style.display = alerts.some(a=>a.deleted) ? 'inline-block' : 'none';
+}
+
+function filterAlerts(term) {
+  const visible = alerts.filter(a=>!a.deleted);
+  if (!term.trim()) filteredAlerts = [...visible];
+  else {
+    const t = term.toLowerCase();
+    filteredAlerts = visible.filter(a => a.address.toLowerCase().includes(t) || a.alert.toLowerCase().includes(t) || a.time.includes(t));
+  }
+  sortAlerts(); render();
+}
+
+function sortAlerts() {
+  const { column, order } = currentSort;
+  filteredAlerts.sort((a,b)=>{
+    let aVal, bVal;
+    if (column==='time') {
+      const [ah,am] = a.time.split(':').map(Number);
+      const [bh,bm] = b.time.split(':').map(Number);
+      aVal = ah*60+am; bVal = bh*60+bm;
+    } else if (column==='modified') {
+      aVal = new Date(a.modified||0); bVal = new Date(b.modified||0);
     } else {
-      setMessage(j.error || 'Kirjautuminen epäonnistui');
+      aVal = (a[column]||'').toLowerCase(); bVal = (b[column]||'').toLowerCase();
     }
+    if (aVal < bVal) return order==='asc' ? -1 : 1;
+    if (aVal > bVal) return order==='asc' ? 1 : -1;
+    return 0;
   });
-  document.getElementById('btnLogout').addEventListener('click', ()=>{
-    token = null; user = null; localStorage.removeItem('token'); localStorage.removeItem('user'); updateAuthUI(); render([]);
+  filteredAlerts.sort((a,b)=>(a.pinned && !b.pinned) ? -1 : (!a.pinned && b.pinned) ? 1 : 0);
+}
+
+function render() {
+  const tbody = document.querySelector('#alertTable tbody');
+  tbody.innerHTML = '';
+  updateStats();
+  if (filteredAlerts.length===0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="no-results">Ei tuloksia</td></tr>'; 
+    showRestoreButton();
+    return;
+  }
+  
+  filteredAlerts.forEach(entry=>{
+    const tr = document.createElement('tr');
+    
+    const timeColorClass = getTimeColorClass(entry.time);
+    if (timeColorClass) {
+      tr.classList.add(timeColorClass);
+    }
+    
+    if (entry.pinned) tr.classList.add('pinned');
+    
+    const tdAddress = document.createElement('td'); 
+    tdAddress.textContent = entry.address;
+    tdAddress.onclick=()=>{ 
+      navigator.clipboard.writeText(entry.address); 
+      tdAddress.classList.add('copied'); 
+      setTimeout(()=>tdAddress.classList.remove('copied'),500); 
+    };
+    
+    const tdAlert = document.createElement('td'); 
+    tdAlert.textContent = entry.alert;
+    
+    const tdTime = document.createElement('td'); 
+    tdTime.textContent = entry.time;
+    
+    const tdActions = document.createElement('td');
+    const editBtn = document.createElement('button'); 
+    editBtn.textContent='Muokkaa'; 
+    editBtn.className='btn-edit'; 
+    editBtn.onclick=()=>openEditModal(entry);
+    
+    const pinBtn = document.createElement('button'); 
+    pinBtn.textContent=entry.pinned?'Poista pinnaus':'Pinnaa'; 
+    pinBtn.className='btn-pin';
+    pinBtn.onclick=async ()=>{ 
+      const res = await fetch('/api/alerts/'+entry.id, { 
+        method:'PUT', 
+        headers:{ 'Content-Type':'application/json','Authorization':'Bearer '+token }, 
+        body: JSON.stringify({ pinned: !entry.pinned }) 
+      });
+      if (res.ok) {
+        entry.pinned = !entry.pinned;
+        filterAlerts(document.getElementById('searchInput').value);
+      }
+    };
+    
+    const delBtn = document.createElement('button'); 
+    delBtn.textContent='Poista'; 
+    delBtn.className='btn-delete';
+    delBtn.onclick=async ()=>{ 
+      const res = await fetch('/api/alerts/'+entry.id, { 
+        method:'DELETE', 
+        headers:{ 'Authorization':'Bearer '+token } 
+      });
+      if (res.ok) {
+        loadAlerts();
+      }
+    };
+    
+    tdActions.append(editBtn,pinBtn,delBtn);
+    
+    const tdModified = document.createElement('td'); 
+    tdModified.textContent = entry.modified || '–';
+    
+    tr.append(tdAddress,tdAlert,tdTime,tdActions,tdModified); 
+    tbody.appendChild(tr);
   });
-  document.getElementById('btnAdd').addEventListener('click', async ()=>{
-    const val = document.getElementById('input').value.trim();
-    const parts = val.split(',').map(s=>s.trim());
-    if (parts.length!==3) return setMessage('Syötä Osoite, Hälytys, Kello (esim "Katu 1, Palo, 1245")');
-    const [address, alertText, timeRaw] = parts;
-    const time = formatTime(timeRaw);
-    if (!isValidTime(time)) return setMessage('Tuntematon kellonaika');
-    const res = await fetch('/api/alerts', { method:'POST', headers: { 'Content-Type':'application/json', 'Authorization': 'Bearer '+token }, body: JSON.stringify({ address, alert: alertText, time }) });
-    if (!res.ok) { const j=await res.json(); return setMessage(j.error||'Virhe lisättäessä'); }
-    document.getElementById('input').value=''; setMessage('Lisätty'); loadAlerts();
-  });
-  function formatTime(t) {
-    const digits = t.replace(/\D/g,'');
-    if (digits.length<=2) return digits.padStart(2,'0')+':00';
-    if (digits.length===3) return digits[0]+':'+digits.slice(1).padStart(2,'0');
-    return digits.slice(0,-2).padStart(2,'0')+':'+digits.slice(-2);
-  }
-  function isValidTime(t) {
-    const [h,m]=t.split(':').map(Number); return h>=0 && h<24 && m>=0 && m<60;
-  }
-  async function loadAlerts(){
-    if (!token) return render([]);
-    const res = await fetch('/api/alerts', { headers: { 'Authorization': 'Bearer '+token } });
-    if (!res.ok) { render([]); return; }
-    const j = await res.json();
-    render(j.alerts || []);
-  }
-  function render(alerts){
-    const tbody = document.querySelector('#alertTable tbody');
-    tbody.innerHTML='';
-    if (!alerts.length) { tbody.innerHTML='<tr><td colspan="4" class="no-results">Ei hälytyksiä</td></tr>'; return; }
-    alerts.forEach(a=>{
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${a.address}</td><td>${a.alert}</td><td>${a.time}</td><td>
-        <button data-id="${a.id}" class="btnDel">Poista</button>
-        <button data-id="${a.id}" class="btnTogglePin">${a.pinned? 'Poista pinnaus':'Pinnaa'}</button>
-      </td>`;
-      tbody.appendChild(tr);
+  showRestoreButton();
+}
+
+function openEditModal(entry) {
+  const bg = document.createElement('div'); bg.className='modal-bg';
+  const modal = document.createElement('div'); modal.className='modal';
+  modal.innerHTML = `<h3>Muokkaa hälytystä</h3>
+    <input id="editAddress" type="text" value="${entry.address}">
+    <input id="editAlert" type="text" value="${entry.alert}">
+    <input id="editTime" type="time" value="${entry.time}">
+    <div><button id="saveEdit">Tallenna</button> <button id="cancelEdit">Peruuta</button></div>`;
+  bg.appendChild(modal); document.body.appendChild(bg);
+  document.getElementById('cancelEdit').onclick=()=>bg.remove();
+  document.getElementById('saveEdit').onclick=async ()=>{
+    const a = document.getElementById('editAddress').value.trim();
+    const al = document.getElementById('editAlert').value.trim();
+    let ti = document.getElementById('editTime').value;
+    if (!a || !al || !ti || !isValidTime(ti)) { 
+      alert("Tarkista syötteet."); 
+      return; 
+    }
+    const res = await fetch('/api/alerts/'+entry.id, {
+      method: 'PUT',
+      headers: { 'Content-Type':'application/json', 'Authorization':'Bearer '+token },
+      body: JSON.stringify({ address: a, alert: al, time: ti })
     });
-    document.querySelectorAll('.btnDel').forEach(b=>b.addEventListener('click', async (e)=>{
-      const id = e.target.dataset.id;
-      await fetch('/api/alerts/'+id, { method:'DELETE', headers:{ 'Authorization':'Bearer '+token } });
+    if (res.ok) {
       loadAlerts();
-    }));
-    document.querySelectorAll('.btnTogglePin').forEach(b=>b.addEventListener('click', async (e)=>{
-      const id = e.target.dataset.id;
-      const row = alerts.find(x=>x.id===id);
-      await fetch('/api/alerts/'+id, { method:'PUT', headers:{ 'Content-Type':'application/json','Authorization':'Bearer '+token }, body: JSON.stringify({ pinned: !row.pinned }) });
-      loadAlerts();
-    }));
+      bg.remove();
+      showMessage('Hälytys päivitetty!');
+    }
+  };
+}
+
+document.getElementById('input').addEventListener('keypress', async e=>{
+  if (e.key==='Enter') {
+    const parts = e.target.value.split(',').map(s=>s.trim());
+    if (parts.length===3) {
+      let timeVal = formatTime(parts[2]);
+      if (!parts[0] || !parts[1] || !isValidTime(timeVal)) { 
+        setMessage("Tarkista syötteet."); 
+        return; 
+      }
+      const res = await fetch('/api/alerts', { 
+        method:'POST', 
+        headers: { 'Content-Type':'application/json', 'Authorization': 'Bearer '+token }, 
+        body: JSON.stringify({ address: parts[0], alert: parts[1], time: timeVal }) 
+      });
+      if (res.ok) {
+        e.target.value=''; 
+        showMessage("Hälytys lisätty!");
+        loadAlerts();
+      } else {
+        const j = await res.json();
+        setMessage(j.error || 'Virhe lisättäessä');
+      }
+    }
   }
-  // Auto-load if logged in
-  if (token) loadAlerts();
+});
+
+document.getElementById('searchInput').addEventListener('input', e=>filterAlerts(e.target.value));
+document.getElementById('sortSelect').addEventListener('change', e=>{ currentSort.column=e.target.value; sortAlerts(); render(); });
+document.getElementById('sortOrder').addEventListener('change', e=>{ currentSort.order=e.target.value; sortAlerts(); render(); });
+
+document.querySelectorAll('th[data-column]').forEach(th=>{
+  th.addEventListener('click', ()=>{
+    const col=th.dataset.column;
+    if (currentSort.column===col) currentSort.order=currentSort.order==='asc'?'desc':'asc';
+    else { currentSort.column=col; currentSort.order='asc'; }
+    document.getElementById('sortSelect').value=currentSort.column;
+    document.getElementById('sortOrder').value=currentSort.order;
+    sortAlerts(); render();
+  });
+});
+
+function showMessage(msg) {
+  const div = document.getElementById("alertMessage");
+  div.textContent = msg; div.style.display="block"; div.style.opacity=1;
+  setTimeout(()=>{div.style.opacity=0;},2000);
+  setTimeout(()=>{div.style.display="none";},2500);
+}
+
+// Dark mode toggle
+const body = document.body;
+const darkModeKey = 'darkModeEnabled';
+
+if (localStorage.getItem(darkModeKey) === 'true') {
+  body.classList.add('dark');
+}
+
+document.getElementById('toggleDarkMode').addEventListener('click', () => {
+  body.classList.toggle('dark');
+  localStorage.setItem(darkModeKey, body.classList.contains('dark'));
+});
+
+// Päivitä väritys automaattisesti minuutin välein
+setInterval(()=>{ 
+  if (token && alerts.length > 0) {
+    sortAlerts(); 
+    render(); 
+  }
+},60000);
+
+// Enter key login
+document.getElementById('password').addEventListener('keypress', e => {
+  if (e.key === 'Enter') {
+    document.getElementById('btnLogin').click();
+  }
+});
+
+// Initialize
+updateAuthUI();
 </script>
 </body>
 </html>
